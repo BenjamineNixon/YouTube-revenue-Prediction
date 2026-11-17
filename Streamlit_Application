@@ -117,9 +117,9 @@ if st.button("🚀 Predict Revenue"):
     st.plotly_chart(fig,use_container_width=True)
     st.subheader("Revenue Insight")
 
-    if prediction > 250:
+    if prediction > 200:
         st.success("🔥 High Revenue Potential")
-    elif prediction < 250:
+    elif prediction < 200:
         st.warning("📈 Medium Revenue Potential")
     else:
         st.info("📊 Low Revenue Potential")
