@@ -1,0 +1,136 @@
+
+## Import the necessary packages
+
+import streamlit as st
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import plotly.express as px
+import joblib
+from PIL import Image
+
+
+
+
+
+col1, col2 = st.columns([1,4])
+
+with col1:
+    st.image(
+        "https://upload.wikimedia.org/wikipedia/commons/e/ef/Youtube_logo.png",
+        width=120
+    )
+
+with col2:
+    st.title("YouTube Revenue Prediction Dashboard")
+    st.write("Predict video revenue using Machine Learning")
+
+model = joblib.load(".venv/Revenue_Prediction.pkl")
+
+
+
+
+
+st.sidebar.header("Enter the details")
+views = st.sidebar.number_input(label = "Views",
+    min_value=0,
+    value= 100
+)
+
+likes = st.sidebar.number_input(label = "Likes",
+    min_value=0,
+    value=500
+)
+
+comments = st.sidebar.number_input(
+    "Comments",
+    min_value=0,
+    value=500
+)
+
+watch_time_minutes = st.sidebar.number_input(
+    "Watch Time (Minutes)",
+    min_value=0.0,
+    value=250.0
+)
+
+video_length_minutes = st.sidebar.number_input(
+    "Video Length (Minutes)",
+    min_value=0.1,
+    value=10.0
+)
+
+subscribers = st.sidebar.number_input(
+    "Subscribers",
+    min_value=0,
+    value=500
+)
+Engagement_Rate = st.sidebar.number_input(
+    "Engagement Rate (%)",
+    min_value=0.0,
+    value=5.0
+)
+
+category = st.sidebar.selectbox(label = "category",options = ["Entertainment","Gaming","Education",
+                                                              "Lifestyle","Music","Tech"] )
+
+device = st.sidebar.selectbox(label = "device",options = ["Desktop","Mobile","Tablet","Mobile"])
+
+
+country = st.sidebar.selectbox(label = "country", options = ["AU","CA","DE","IN","UK","US"])
+
+
+
+Input = pd.DataFrame({"views": views, "likes": likes, "comments": comments,
+                      "watch_time_minutes": watch_time_minutes, "video_length_minutes": video_length_minutes,
+                      "subscribers": subscribers,
+                      "Engagement_Rate": Engagement_Rate, "category": category,
+                      "device":device,"country": country},index=[0])
+
+if st.button("🚀 Predict Revenue"):
+
+    prediction = model.predict(Input)[0]
+
+    st.success(
+        f"Predicted Revenue: ${prediction:,.2f}"
+
+    )
+
+
+    col1, col2, col3 = st.columns(3)
+
+    col1.metric("Views", f"{views:,}")
+    col2.metric("Likes", f"{likes:,}")
+    col3.metric("Engagement", f"{Engagement_Rate:.2f}%")
+
+    st.subheader("Input Details")
+    st.dataframe(Input)
+
+    st.subheader("Feature Insights")
+
+    feature_df = pd.DataFrame({"Feature":["views", "likes", "comments", "watch_time_minutes",
+                                          "video_length_minutes","subscribers","Engagement_Rate"],
+                               "values":[views,likes,comments,watch_time_minutes,
+                                         video_length_minutes,subscribers,Engagement_Rate]})
+
+    fig = px.bar(feature_df, x="Feature", y="values", color="values",title="Input Feature Overview")
+    st.plotly_chart(fig,use_container_width=True)
+    st.subheader("Revenue Insight")
+
+    if prediction > 250:
+        st.success("🔥 High Revenue Potential")
+    elif prediction < 250:
+        st.warning("📈 Medium Revenue Potential")
+    else:
+        st.info("📊 Low Revenue Potential")
+
+    result_df = pd.DataFrame(
+        {"Predicted_Revenue": [prediction]}
+    )
+
+    st.download_button(
+        label="Download Prediction",
+        data=result_df.to_csv(index=False),
+        file_name="revenue_prediction.csv",
+        mime="text/csv"
+    )
