@@ -74,7 +74,7 @@ Engagement_Rate = st.sidebar.number_input(
 category = st.sidebar.selectbox(label = "category",options = ["Entertainment","Gaming","Education",
                                                               "Lifestyle","Music","Tech"] )
 
-device = st.sidebar.selectbox(label = "device",options = ["Desktop","Mobile","Tablet","Mobile"])
+device = st.sidebar.selectbox(label = "device",options = ["Desktop","Mobile","Tablet","TV"])
 
 
 country = st.sidebar.selectbox(label = "country", options = ["AU","CA","DE","IN","UK","US"])
