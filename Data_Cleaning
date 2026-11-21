@@ -1,0 +1,58 @@
+## Data preprocessing
+
+## Import the necessary Libraries
+
+import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+import seaborn as sns
+
+## Load or Read the CSV file
+
+df = pd.read_csv(r"C:\Users\benja\PycharmProjects\PythonProject\Task\youtube_ad_revenue_dataset.csv")
+
+## Identify the duplicate values and drop them
+
+df.duplicated().sum()
+df.drop_duplicates(inplace = True)
+
+## Identify the Null values and Impute them
+
+df.isna().sum()
+
+df["likes"] = df["likes"].fillna(df["likes"].median())
+df["comments"] = df["comments"].fillna(df["comments"].median())
+df["watch_time_minutes"] = df["watch_time_minutes"].fillna(df["watch_time_minutes"].median())
+
+## Standardize all the colums
+
+df.dtypes
+df["date"] = pd.to_datetime(df["date"])
+
+## Create New Feature engagement rate
+
+df["Engagement_Rate"] = (df["likes"] + df["comments"])/df["views"]
+
+##EDA
+
+Num_Cont = df[["views","likes","comments","watch_time_minutes","video_length_minutes","subscribers"]]
+Cat = df[["category","device","country"]]
+
+
+for col in Num_Cont:
+    sns.scatterplot( x = col , y = df["ad_revenue_usd"], data = df, color = "blue")
+    plt.title(f'{col} Distribution')
+    plt.xlabel(f'{col}')
+    plt.ylabel("Revenue")
+    plt.show()
+for cols in Cat:
+    sns.barplot(x = cols, y = df["ad_revenue_usd"], data = df, color = "blue")
+    plt.xlabel(f'{col}')
+    plt.ylabel("frequency")
+    plt.title(f'{col} Distribution')
+    plt.show()
+
+
+
+
+
