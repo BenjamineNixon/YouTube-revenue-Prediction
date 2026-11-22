@@ -51,8 +51,30 @@ for cols in Cat:
     plt.ylabel("frequency")
     plt.title(f'{col} Distribution')
     plt.show()
+for cols in Cat:
+    sns.boxplot(x = cols, y = df["ad_revenue_usd"], data = df, color = "blue")
+    plt.xlabel(f'{col}')
+    plt.title(f'{col} Distribution')
+    plt.show()
 
+## NUM VS NUM Correlation
+pd.concat([df["ad_revenue_usd"],df[Num_Cont.columns]],axis = 1).corr(method = "spearman")["ad_revenue_usd"]
+sns.heatmap(pd.concat([df['ad_revenue_usd'],df[Num_Cont.columns]],axis = 1).corr(method = "spearman"))
 
+## ANOVA test
+
+from scipy.stats import f_oneway
+def ANOVA_Test(df,col,target):
+    sns.barplot(data = df, x = col, y = target , color = '#86ed37')
+    plt.show()
+    groups = [df[df[col] == select][target] for select in df[col].unique()]
+    F_stats,P_value = f_oneway(*groups)
+    if P_value<0.05:
+        print(f'Reject Null Hypothesis: There is impact between {target} and {col}')
+        print({'Feature_column':col,'Target_Column':target,'Test':'ANOVA','P_Val':P_value,'Selection_Status':'Yes'})
+    else:
+        print(f'Accept Null Hypothesis: There is no Impact between {target} and {col}')
+        print({'Feature_column':col,'Target_Column':target,'Test':'ANOVA','P_Val':P_value,'Selection_Status':'No'})    
 
 
 
