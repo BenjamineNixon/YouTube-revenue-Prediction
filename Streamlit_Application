@@ -27,7 +27,7 @@ model = joblib.load(".venv/Revenue_Prediction.pkl")
 
 
 
-
+## Creating Sidebar for the necessary inputs
 
 st.sidebar.header("Enter the details")
 views = st.sidebar.number_input(label = "Views",
@@ -72,13 +72,16 @@ device = st.sidebar.selectbox(label = "device",options = ["Desktop","Mobile","Ta
 
 country = st.sidebar.selectbox(label = "country", options = ["AU","CA","DE","IN","UK","US"])
 
-
+## Dataframe for the given input
 
 Input = pd.DataFrame({"views": views, "likes": likes, "comments": comments,
                       "watch_time_minutes": watch_time_minutes, "video_length_minutes": video_length_minutes,
                       "subscribers": subscribers,
                       "category": category,
                       "device":device,"country": country},index=[0])
+
+
+## Predict Button
 
 if st.button("🚀 Predict Revenue"):
 
@@ -94,6 +97,8 @@ if st.button("🚀 Predict Revenue"):
     st.dataframe(Input)
 
     st.subheader("Feature Insights")
+
+## Visualization
 
     feature_df = pd.DataFrame({"Feature":["views", "likes", "comments", "watch_time_minutes",
                                           "video_length_minutes","subscribers"],
