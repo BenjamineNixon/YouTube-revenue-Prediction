@@ -11,8 +11,6 @@ from PIL import Image
 
 
 
-
-
 col1, col2 = st.columns([1,4])
 
 with col1:
@@ -65,11 +63,6 @@ subscribers = st.sidebar.number_input(
     min_value=0,
     value=500
 )
-Engagement_Rate = st.sidebar.number_input(
-    "Engagement Rate (%)",
-    min_value=0.0,
-    value=5.0
-)
 
 category = st.sidebar.selectbox(label = "category",options = ["Entertainment","Gaming","Education",
                                                               "Lifestyle","Music","Tech"] )
@@ -84,7 +77,7 @@ country = st.sidebar.selectbox(label = "country", options = ["AU","CA","DE","IN"
 Input = pd.DataFrame({"views": views, "likes": likes, "comments": comments,
                       "watch_time_minutes": watch_time_minutes, "video_length_minutes": video_length_minutes,
                       "subscribers": subscribers,
-                      "Engagement_Rate": Engagement_Rate, "category": category,
+                      "category": category,
                       "device":device,"country": country},index=[0])
 
 if st.button("🚀 Predict Revenue"):
@@ -97,29 +90,23 @@ if st.button("🚀 Predict Revenue"):
     )
 
 
-    col1, col2, col3 = st.columns(3)
-
-    col1.metric("Views", f"{views:,}")
-    col2.metric("Likes", f"{likes:,}")
-    col3.metric("Engagement", f"{Engagement_Rate:.2f}%")
-
     st.subheader("Input Details")
     st.dataframe(Input)
 
     st.subheader("Feature Insights")
 
     feature_df = pd.DataFrame({"Feature":["views", "likes", "comments", "watch_time_minutes",
-                                          "video_length_minutes","subscribers","Engagement_Rate"],
+                                          "video_length_minutes","subscribers"],
                                "values":[views,likes,comments,watch_time_minutes,
-                                         video_length_minutes,subscribers,Engagement_Rate]})
+                                         video_length_minutes,subscribers]})
 
     fig = px.bar(feature_df, x="Feature", y="values", color="values",title="Input Feature Overview")
     st.plotly_chart(fig,use_container_width=True)
     st.subheader("Revenue Insight")
 
-    if prediction > 200:
+    if prediction > 50:
         st.success("🔥 High Revenue Potential")
-    elif prediction < 200:
+    elif prediction < 50 and prediction > 10:
         st.warning("📈 Medium Revenue Potential")
     else:
         st.info("📊 Low Revenue Potential")
@@ -134,3 +121,5 @@ if st.button("🚀 Predict Revenue"):
         file_name="revenue_prediction.csv",
         mime="text/csv"
     )
+
+
