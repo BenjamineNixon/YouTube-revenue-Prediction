@@ -74,7 +74,207 @@ def ANOVA_Test(df,col,target):
         print({'Feature_column':col,'Target_Column':target,'Test':'ANOVA','P_Val':P_value,'Selection_Status':'Yes'})
     else:
         print(f'Accept Null Hypothesis: There is no Impact between {target} and {col}')
-        print({'Feature_column':col,'Target_Column':target,'Test':'ANOVA','P_Val':P_value,'Selection_Status':'No'})    
+        print({'Feature_column':col,'Target_Column':target,'Test':'ANOVA','P_Val':P_value,'Selection_Status':'No'})
+
+
+
+for col in Cat.columns.to_list():
+    Value = ANOVA_Test(df,col,"ad_revenue_usd")
+
+
+## Cleaned Final CSV file
+df.to_csv("Final_report.csv", index=False)
+
+## Machine Learnimg Model creation
+
+import pandas as pd
+report = pd.read_csv("Final_report.csv")
+
+## Importing the necessary libraries and Metrics
+
+from sklearn.preprocessing import StandardScaler,MinMaxScaler,RobustScaler
+from sklearn.preprocessing import OrdinalEncoder,OneHotEncoder
+from sklearn.model_selection import train_test_split
+from sklearn.pipeline import Pipeline
+from sklearn.compose import ColumnTransformer
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import PolynomialFeatures
+import xgboost as xgb
+from sklearn.ensemble import RandomForestRegressor
+import joblib
+
+# Model
+
+from sklearn.linear_model import LinearRegression,Ridge,Lasso
+
+from sklearn.metrics import mean_squared_error,mean_absolute_error,r2_score,root_mean_squared_error
+
+
+Num_cont = report[['views', 'likes', 'comments', 'watch_time_minutes',
+       'video_length_minutes', 'subscribers']]
+cat = report[[ 'category', 'device', 'country']]
+
+Features = report.drop(["ad_revenue_usd","date","video_id"], axis = 1)
+Target = report['ad_revenue_usd']
+
+## Linear Regression Model
+
+Num = Pipeline(steps = [("Impute",SimpleImputer(strategy = "median")),("Scaling", StandardScaler())])
+Cat = Pipeline(steps = [("Impute", SimpleImputer(strategy = "most_frequent")),("Encoding", OneHotEncoder(handle_unknown = "ignore"))])
+Trans = ColumnTransformer(transformers = [("Numeric", Num,Num_cont.columns.to_list()),("Cat",Cat,cat.columns.to_list())])
+LR_Pipeline = Pipeline(steps = [("Preprocess_steps", Trans),("LR",LinearRegression())])
+LR_Pipeline
+Features_Train_LR,Features_Test_LR,Target_Train_LR,Target_Test_LR = train_test_split(Features,Target,test_size = 0.2,random_state = 17)
+LR_Pipeline.fit(Features_Train_LR,Target_Train_LR)
+
+Feature_train_Predict_LR = LR_Pipeline.predict(Features_Train_LR)
+Feature_test_Predict_LR = LR_Pipeline.predict(Features_Test_LR)
+
+MAE_LR_Train = mean_absolute_error(Target_Train_LR,Feature_train_Predict_LR)
+MAE_LR_Test = mean_absolute_error(Target_Test_LR,Feature_test_Predict_LR)
+
+RMSE_LR_Train = root_mean_squared_error(Target_Train_LR,Feature_train_Predict_LR)
+RMSE_LR_Test = root_mean_squared_error(Target_Test_LR,Feature_test_Predict_LR)
+
+R2score_LR_Train = r2_score(Target_Train_LR,Feature_train_Predict_LR)
+R2score_LR_Test = r2_score(Target_Test_LR,Feature_test_Predict_LR)
+
+print("MAE_LR_Train",MAE_LR_Train, "in USD")
+print("MAE_LR_Test",MAE_LR_Test, "in USD")
+print("RMSE_LR_Train",RMSE_LR_Train, "in USD")
+print("RMSE_LR_Test",RMSE_LR_Test, "in USD")
+print("R2score_LR_Train",R2score_LR_Train, "in USD")
+print("R2score_LR_Test",R2score_LR_Test, "in USD")
+
+## Poly Pipeline
+
+
+LR_Pipeline_Poly = Pipeline(steps = [("Preprocess_steps", Trans),("Poly",PolynomialFeatures(degree = 2)),("LR_Poly", LinearRegression())])
+Features_Train_PP,Features_Test_PP,Target_Train_PP,Target_Test_PP = train_test_split(Features,Target,test_size = 0.2,random_state = 17)
+LR_Pipeline_Poly.fit(Features_Train_PP,Target_Train_PP)
+
+Feature_train_Predict_PP = LR_Pipeline_Poly.predict(Features_Train_PP)
+Feature_test_Predict_PP = LR_Pipeline_Poly.predict(Features_Test_PP)
+
+MAE_PP_Train = mean_absolute_error(Target_Train_PP,Feature_train_Predict_PP)
+MAE_PP_Test = mean_absolute_error(Target_Test_PP,Feature_test_Predict_PP)
+
+RMSE_PP_Train = root_mean_squared_error(Target_Train_PP,Feature_train_Predict_PP)
+RMSE_PP_Test = root_mean_squared_error(Target_Test_PP,Feature_test_Predict_PP)
+
+R2score_PP_Train = r2_score(Target_Train_PP,Feature_train_Predict_PP)
+R2score_PP_Test = r2_score(Target_Test_PP,Feature_test_Predict_PP)
+
+print("MAE_PP_Train",MAE_PP_Train, "in USD")
+print("MAE_PP_Test",MAE_PP_Test, "in USD")
+print("RMSE_PP_Train",RMSE_PP_Train, "in USD")
+print("RMSE_PP_Test",RMSE_PP_Test, "in USD")
+print("R2score_PP_Train",R2score_PP_Train, "in USD")
+print("R2score_PP_Test",R2score_PP_Test, "in USD")
+
+
+## Lasso Pipeline
+
+
+Lasso_Pipeline = Pipeline(steps = [("Preprocess", Trans),("Lasso",Lasso())])
+Features_Train_LA,Features_Test_LA,Target_Train_LA,Target_Test_LA = train_test_split(Features,Target,test_size = 0.2,random_state = 17)
+Lasso_Pipeline.fit(Features_Train_LA,Target_Train_LA)
+
+Feature_train_Predict_LA = Lasso_Pipeline.predict(Features_Train_LA)
+Feature_test_Predict_LA = Lasso_Pipeline.predict(Features_Test_LA)
+
+MAE_LA_Train = mean_absolute_error(Target_Train_LA,Feature_train_Predict_LA)
+MAE_LA_Test = mean_absolute_error(Target_Test_LA,Feature_test_Predict_LA)
+
+RMSE_LA_Train = root_mean_squared_error(Target_Train_LA,Feature_train_Predict_LA)
+RMSE_LA_Test = root_mean_squared_error(Target_Test_LA,Feature_test_Predict_LA)
+
+R2score_LA_Train = r2_score(Target_Train_LA,Feature_train_Predict_LA)
+R2score_LA_Test = r2_score(Target_Test_LA,Feature_test_Predict_LA)
+
+print("MAE_LA_Train",MAE_LA_Train, "in USD")
+print("MAE_LA_Test",MAE_LA_Test, "in USD")
+print("RMSE_LA_Train",RMSE_LA_Train, "in USD")
+print("RMSE_LA_Test",RMSE_LA_Test, "in USD")
+print("R2score_LA_Train",R2score_LA_Train, "in USD")
+print("R2score_LA_Test",R2score_LA_Test, "in USD")
+
+## XG Boost
+
+Boost = Pipeline(steps=[("Pre_process_steps",Trans),("Model",xgb.XGBRegressor(
+    n_estimators=500,
+    max_depth=5,
+    learning_rate=0.04
+))])
+Features_Train_BO,Features_Test_BO,Target_Train_BO,Target_Test_BO = train_test_split(Features,Target,test_size = 0.2,random_state = 17)
+Boost.fit(Features_Train_BO,Target_Train_BO)
+
+Feature_train_Predict_BO = Boost.predict(Features_Train_BO)
+Feature_test_Predict_BO = Boost.predict(Features_Test_BO)
+
+MAE_BO_Train = mean_absolute_error(Target_Train_BO,Feature_train_Predict_BO)
+MAE_BO_Test = mean_absolute_error(Target_Test_BO,Feature_test_Predict_BO)
+
+RMSE_BO_Train = root_mean_squared_error(Target_Train_BO,Feature_train_Predict_BO)
+RMSE_BO_Test = root_mean_squared_error(Target_Test_BO,Feature_test_Predict_BO)
+
+R2score_BO_Train = r2_score(Target_Train_BO,Feature_train_Predict_BO)
+R2score_BO_Test = r2_score(Target_Test_BO,Feature_test_Predict_BO)
+
+print("MAE_BO_Train",MAE_BO_Train, "in USD")
+print("MAE_BO_Test",MAE_BO_Test, "in USD")
+print("RMSE_BO_Train",RMSE_BO_Train, "in USD")
+print("RMSE_BO_Test",RMSE_BO_Test, "in USD")
+print("R2score_BO_Train",R2score_BO_Train, "in USD")
+print("R2score_BO_Test",R2score_BO_Test, "in USD")
+
+
+## Random Forest
+
+RF_Pipeline = Pipeline(steps=[
+    ("Preprocess", Trans),
+    ("Model", RandomForestRegressor(
+        n_estimators=500,
+        max_depth=10,
+        min_samples_split=5,
+        min_samples_leaf=2,
+        random_state=17,
+        n_jobs=-1
+    ))
+])
+Features_Train_RF,Features_Test_RF,Target_Train_RF,Target_Test_RF = train_test_split(Features,Target,test_size = 0.2,random_state = 17)
+RF_Pipeline.fit(Features_Train_RF,Target_Train_RF)
+
+
+Feature_train_Predict_RF = RF_Pipeline.predict(Features_Train_RF)
+Feature_test_Predict_RF = RF_Pipeline.predict(Features_Test_RF)
+
+MAE_RF_Train = mean_absolute_error(Target_Train_RF,Feature_train_Predict_RF)
+MAE_RF_Test = mean_absolute_error(Target_Test_RF,Feature_test_Predict_RF)
+
+RMSE_RF_Train = root_mean_squared_error(Target_Train_RF,Feature_train_Predict_RF)
+RMSE_RF_Test = root_mean_squared_error(Target_Test_RF,Feature_test_Predict_RF)
+
+R2score_RF_Train = r2_score(Target_Train_RF,Feature_train_Predict_RF)
+R2score_RF_Test = r2_score(Target_Test_RF,Feature_test_Predict_RF)
+
+print("MAE_RF_Train",MAE_RF_Train, "in USD")
+print("MAE_RF_Test",MAE_RF_Test, "in USD")
+print("RMSE_RF_Train",RMSE_RF_Train, "in USD")
+print("RMSE_RF_Test",RMSE_RF_Test, "in USD")
+print("R2score_RF_Train",R2score_RF_Train, "in USD")
+print("R2score_RF_Test",R2score_RF_Test, "in USD")
+
+
+## Model Selection
+
+## Low MAE & RMSE Test score
+## High r2 score for Test
+## small gap between Train & Test date
+
+## Final Selected Model
+
+joblib.dump(LR_Pipeline,"Revenue_Prediction.pkl")
 
 
 
